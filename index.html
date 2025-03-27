@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Game Website</title>
+    <style>
+        body { text-align: center; padding: 50px; }
+        h1 { color: #333; }
+        canvas { border: 1px solid #000; }
+    </style>
+</head>
+<body>
+    <h1>Welcome to My Mini Game Website!</h1>
+    <canvas id="gameCanvas" width="300" height="300"></canvas>
+    <script>
+        // Mini game script - Moving square in a box
+        let canvas = document.getElementById('gameCanvas');
+        let ctx = canvas.getContext('2d');
+        let x = 50, y = 50, speed = 2;
+
+        function drawSquare() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
+            ctx.fillStyle = "#FF0000"; // Red square
+            ctx.fillRect(x, y, 50, 50); // Draw square
+
+            // Move the square
+            x += speed;
+            if (x > canvas.width - 50 || x < 0) {
+                speed = -speed; // Reverse direction when hitting edge
+            }
+
+            requestAnimationFrame(drawSquare); // Keep animating
+        }
+
+        drawSquare(); // Start game
+    </script>
+</body>
+</html>
