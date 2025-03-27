@@ -3,37 +3,164 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>My Game Website</title>
+    <title>Complex Mini Game</title>
     <style>
-        body { text-align: center; padding: 50px; }
+        body { text-align: center; padding: 50px; font-family: Arial, sans-serif; }
         h1 { color: #333; }
-        canvas { border: 1px solid #000; }
+        canvas { border: 1px solid #000; background-color: #f4f4f4; }
+        p { font-size: 20px; }
     </style>
 </head>
 <body>
-    <h1>Welcome to My Mini Game Website!</h1>
-    <canvas id="gameCanvas" width="300" height="300"></canvas>
+    <h1>Complex Mini Game</h1>
+    <p>Score: <span id="score">0</span></p>
+    <p>Lives: <span id="lives">3</span></p>
+    <canvas id="gameCanvas" width="500" height="500"></canvas>
     <script>
-        // Mini game script - Moving square in a box
+        // Set up canvas and context
         let canvas = document.getElementById('gameCanvas');
         let ctx = canvas.getContext('2d');
-        let x = 50, y = 50, speed = 2;
 
-        function drawSquare() {
-            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas
-            ctx.fillStyle = "#FF0000"; // Red square
-            ctx.fillRect(x, y, 50, 50); // Draw square
+        // Game variables
+        let player = { x: 50, y: 50, width: 30, height: 30, speed: 5, color: "#00F" };
+        let coins = [];
+        let enemies = [];
+        let score = 0;
+        let lives = 3;
 
-            // Move the square
-            x += speed;
-            if (x > canvas.width - 50 || x < 0) {
-                speed = -speed; // Reverse direction when hitting edge
+        // Create random coins
+        function generateCoins() {
+            for (let i = 0; i < 5; i++) {
+                coins.push({
+                    x: Math.random() * (canvas.width - 30),
+                    y: Math.random() * (canvas.height - 30),
+                    width: 20,
+                    height: 20,
+                    collected: false
+                });
             }
-
-            requestAnimationFrame(drawSquare); // Keep animating
         }
 
-        drawSquare(); // Start game
+        // Create enemies
+        function generateEnemies() {
+            for (let i = 0; i < 3; i++) {
+                enemies.push({
+                    x: Math.random() * (canvas.width - 30),
+                    y: Math.random() * (canvas.height - 30),
+                    width: 30,
+                    height: 30,
+                    speed: Math.random() * 2 + 1, // Random speed between 1 and 3
+                    color: "#F00",
+                    direction: Math.random() < 0.5 ? 1 : -1 // Random direction (1 = down, -1 = up)
+                });
+            }
+        }
+
+        // Draw player
+        function drawPlayer() {
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.width, player.height);
+        }
+
+        // Draw coins
+        function drawCoins() {
+            coins.forEach(coin => {
+                if (!coin.collected) {
+                    ctx.fillStyle = "#FF0";
+                    ctx.fillRect(coin.x, coin.y, coin.width, coin.height);
+                }
+            });
+        }
+
+        // Draw enemies
+        function drawEnemies() {
+            enemies.forEach(enemy => {
+                ctx.fillStyle = enemy.color;
+                ctx.fillRect(enemy.x, enemy.y, enemy.width, enemy.height);
+            });
+        }
+
+        // Move player with arrow keys
+        function movePlayer() {
+            window.addEventListener('keydown', (e) => {
+                if (e.key === "ArrowUp" && player.y > 0) player.y -= player.speed;
+                if (e.key === "ArrowDown" && player.y < canvas.height - player.height) player.y += player.speed;
+                if (e.key === "ArrowLeft" && player.x > 0) player.x -= player.speed;
+                if (e.key === "ArrowRight" && player.x < canvas.width - player.width) player.x += player.speed;
+            });
+        }
+
+        // Check for collisions with coins
+        function checkCoinCollection() {
+            coins.forEach(coin => {
+                if (!coin.collected && player.x < coin.x + coin.width && player.x + player.width > coin.x &&
+                    player.y < coin.y + coin.height && player.y + player.height > coin.y) {
+                    coin.collected = true;
+                    score += 10;
+                    document.getElementById("score").innerText = score;
+                }
+            });
+        }
+
+        // Check for collisions with enemies
+        function checkEnemyCollision() {
+            enemies.forEach(enemy => {
+                if (player.x < enemy.x + enemy.width && player.x + player.width > enemy.x &&
+                    player.y < enemy.y + enemy.height && player.y + player.height > enemy.y) {
+                    lives -= 1;
+                    document.getElementById("lives").innerText = lives;
+
+                    if (lives <= 0) {
+                        alert("Game Over!");
+                        resetGame();
+                    }
+                }
+            });
+        }
+
+        // Move enemies
+        function moveEnemies() {
+            enemies.forEach(enemy => {
+                enemy.y += enemy.speed * enemy.direction;
+                if (enemy.y <= 0 || enemy.y >= canvas.height - enemy.height) {
+                    enemy.direction *= -1; // Reverse direction
+                }
+            });
+        }
+
+        // Reset game when lives reach 0
+        function resetGame() {
+            player.x = 50;
+            player.y = 50;
+            score = 0;
+            lives = 3;
+            coins = [];
+            enemies = [];
+            document.getElementById("score").innerText = score;
+            document.getElementById("lives").innerText = lives;
+            generateCoins();
+            generateEnemies();
+        }
+
+        // Game loop
+        function gameLoop() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height); // Clear canvas for next frame
+
+            drawPlayer();
+            drawCoins();
+            drawEnemies();
+            moveEnemies();
+            checkCoinCollection();
+            checkEnemyCollision();
+
+            requestAnimationFrame(gameLoop); // Keep the game loop running
+        }
+
+        // Start the game
+        generateCoins();
+        generateEnemies();
+        movePlayer();
+        gameLoop();
     </script>
 </body>
 </html>
